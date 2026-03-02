@@ -1,41 +1,94 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, BellOff, Bell, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Bell, BellOff, Trash2, ChevronDown, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AlertBulkActionsProps {
   selectedCount: number;
-  onDelete: () => void;
-  onDisable: () => void;
-  onEnable: () => void;
-  onClear: () => void;
+  totalCount: number;
+  onSelectAll?: () => void;
+  onDeselectAll?: () => void;
+  onEnableSelected?: () => void;
+  onDisableSelected?: () => void;
+  onDeleteSelected?: () => void;
+  className?: string;
 }
 
 export function AlertBulkActions({
   selectedCount,
-  onDelete,
-  onDisable,
-  onEnable,
-  onClear,
+  totalCount,
+  onSelectAll,
+  onDeselectAll,
+  onEnableSelected,
+  onDisableSelected,
+  onDeleteSelected,
+  className,
 }: AlertBulkActionsProps) {
-  if (selectedCount === 0) return null;
+  if (selectedCount === 0) {
+    return null;
+  }
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 rounded-lg border border-border">
-      <Badge variant="secondary">{selectedCount} selected</Badge>
-      <div className="flex gap-1">
-        <Button variant="ghost" size="sm" onClick={onEnable}>
-          <Bell className="h-4 w-4 mr-1" />
-          Enable
-        </Button>
-        <Button variant="ghost" size="sm" onClick={onDisable}>
-          <BellOff className="h-4 w-4 mr-1" />
-          Disable
-        </Button>
-        <Button variant="ghost" size="sm" className="text-destructive" onClick={onDelete}>
-          <Trash2 className="h-4 w-4 mr-1" />
-          Delete
-        </Button>
-        <Button variant="ghost" size="sm" onClick={onClear}>
+    <div
+      className={cn(
+        "flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg",
+        className
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <Badge variant="secondary" className="font-mono">
+          {selectedCount} / {totalCount}
+        </Badge>
+        <span className="text-sm text-muted-foreground">selected</span>
+        
+        {selectedCount < totalCount && (
+          <Button variant="link" size="sm" onClick={onSelectAll} className="h-auto p-0">
+            Select all
+          </Button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              Actions
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onEnableSelected}>
+              <Bell className="mr-2 h-4 w-4" />
+              Enable selected
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onDisableSelected}>
+              <BellOff className="mr-2 h-4 w-4" />
+              Disable selected
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={onDeleteSelected}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete selected
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onDeselectAll}
+          className="text-muted-foreground"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
