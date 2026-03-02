@@ -1,42 +1,146 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
+@layer base {
+  :root {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+    --card: 0 0% 7.8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 7.8%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 210 100% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+
+    --accent: 210 100% 56%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 210 100% 56%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 5.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 210 100% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 9.8%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 14.9%;
+    --sidebar-ring: 210 100% 56%;
   }
-  to {
-    transform: rotate(360deg);
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 7.8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 7.8%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 210 100% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+
+    --accent: 210 100% 56%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 210 100% 56%;
+
+    --sidebar-background: 0 0% 5.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 210 100% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 9.8%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 14.9%;
+    --sidebar-ring: 210 100% 56%;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-.card {
-  padding: 2em;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.read-the-docs {
-  color: #888;
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Trading-specific styles */
+.price-up {
+  color: #22c55e;
+}
+
+.price-down {
+  color: #ef4444;
+}
+
+.bid-color {
+  color: #3b82f6;
+}
+
+.ask-color {
+  color: #f59e0b;
+}
+
+/* Chart container */
+.chart-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradient overlays for charts */
+.chart-gradient-top {
+  background: linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 100%);
+}
+
+.chart-gradient-bottom {
+  background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 100%);
 }

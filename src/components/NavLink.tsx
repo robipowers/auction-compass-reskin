@@ -1,11 +1,14 @@
-import { NavLink as RouterNavLink, NavLinkProps } from "react-router-dom";
+import React from "react";
+import { NavLink as RouterNavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-interface CustomNavLinkProps extends NavLinkProps {
+interface NavLinkProps {
+  to: string;
+  children: React.ReactNode;
   className?: string;
 }
 
-export function NavLink({ to, children, className, ...props }: CustomNavLinkProps) {
+export const NavLink: React.FC<NavLinkProps> = ({ to, children, className }) => {
   return (
     <RouterNavLink
       to={to}
@@ -13,14 +16,13 @@ export function NavLink({ to, children, className, ...props }: CustomNavLinkProp
         cn(
           "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
           isActive
-            ? "bg-secondary text-foreground"
-            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
+            ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent",
           className
         )
       }
-      {...props}
     >
       {children}
     </RouterNavLink>
   );
-}
+};
