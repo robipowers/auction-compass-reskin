@@ -1,425 +1,166 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { AuctionPlan, Direction, Coherence, Timeframe } from "@/types/auction";
 import { cn } from "@/lib/utils";
-import { Wand2, Plus, Trash2, Target, AlertTriangle, TrendingUp, BarChart3, Clock } from "lucide-react";
+import { Wand2, Plus, Trash2, Target, AlertTriangle, Lightbulb } from "lucide-react";
 
-interface AuctionPlanFormProps {
-  initialPlan?: Partial<AuctionPlan>;
-  onSubmit: (plan: Omit<AuctionPlan, 'id' | 'createdAt' | 'updatedAt' | 'aiCritique'>) => void;
-  onCancel?: () => void;
-  isLoading?: boolean;
-  mode: "premarket" | "live";
+interface Scenario { id: string; label: string; trigger: string; targets: string; stop: string; probability: number; }
+interface PlanFormData {
+  context: string;
+  structure: "coherent" | "divergent" | "transitioning";
+  keyLevels: { price: string; type: "support" | "resistance" | "value_area" | "poc" }[];
+  scenarios: Scenario[];
+  bias: "bullish" | "bearish" | "neutral";
+  notes: string;
 }
 
-const STOP_PRESETS = [
-  { label: "0.25pt", value: 0.25 },
-  { label: "0.50pt", value: 0.5 },
-  { label: "1pt", value: 1 },
-  { label: "2pt", value: 2 },
-  { label: "3pt", value: 3 },
-  { label: "4pt", value: 4 },
-];
+const defaultScenario = (): Scenario => ({ id: Date.now().toString(), label: "", trigger: "", targets: "", stop: "", probability: 33 });
 
-const TIMEFRAME_OPTIONS: { value: Timeframe; label: string }[] = [
-  { value: "5m", label: "5 Minutes" },
-  { value: "15m", label: "15 Minutes" },
-  { value: "30m", label: "30 Minutes" },
-  { value: "1h", label: "1 Hour" },
-  { value: "4h", label: "4 Hours" },
-  { value: "daily", label: "Daily" },
-];
+export function AuctionPlanForm() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<PlanFormData>({
+    context: "", structure: "coherent", keyLevels: [], scenarios: [defaultScenario()], bias: "neutral", notes: "",
+  });
+  const [aiLoading, setAiLoading] = useState(false);
 
-export function AuctionPlanForm({ initialPlan, onSubmit, onCancel, isLoading, mode }: AuctionPlanFormProps) {
-  const [ticker, setTicker] = useState(initialPlan?.ticker || "");
-  const [direction, setDirection] = useState<Direction>(initialPlan?.direction || "LONG");
-  const [thesis, setThesis] = useState(initialPlan?.thesis || "");
-  const [invalidationConditions, setInvalidationConditions] = useState(
-    initialPlan?.invalidationConditions || [{ condition: "", timeframe: "15m" as Timeframe }]
-  );
-  const [keyLevels, setKeyLevels] = useState(initialPlan?.keyLevels || [{ level: 0, description: "" }]);
-  const [entryTrigger, setEntryTrigger] = useState(initialPlan?.entryTrigger || "");
-  const [stopLoss, setStopLoss] = useState(initialPlan?.stopLoss || 2);
-  const [targets, setTargets] = useState(initialPlan?.targets || [{ price: 0, size: 1, rationale: "" }]);
-  const [timeframe, setTimeframe] = useState<Timeframe>(initialPlan?.timeframe || "15m");
-  const [tags, setTags] = useState<string[]>(initialPlan?.tags || []);
-  const [tagInput, setTagInput] = useState("");
-  const [requiresSpecialEvent, setRequiresSpecialEvent] = useState(initialPlan?.requiresSpecialEvent || false);
+  const addScenario = () => setFormData((prev) => ({ ...prev, scenarios: [...prev.scenarios, defaultScenario()] }));
+  const removeScenario = (id: string) => setFormData((prev) => ({ ...prev, scenarios: prev.scenarios.filter((s) => s.id !== id) }));
+  const updateScenario = (id: string, field: keyof Scenario, value: string | number) =>
+    setFormData((prev) => ({ ...prev, scenarios: prev.scenarios.map((s) => s.id === id ? { ...s, [field]: value } : s) }));
+  const addKeyLevel = () => setFormData((prev) => ({ ...prev, keyLevels: [...prev.keyLevels, { price: "", type: "support" }] }));
+  const removeKeyLevel = (index: number) => setFormData((prev) => ({ ...prev, keyLevels: prev.keyLevels.filter((_, i) => i !== index) }));
 
-  const addInvalidationCondition = () => {
-    setInvalidationConditions([...invalidationConditions, { condition: "", timeframe: "15m" as Timeframe }]);
+  const handleAIAssist = async () => {
+    setAiLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setFormData((prev) => ({
+      ...prev,
+      context: prev.context || "Balanced profile developing after yesterday's initiative move higher. Market opened within value, suggesting possible two-sided trade or range development. Key references: POC at 18,420, VAH at 18,450, VAL at 18,380.",
+      scenarios: [
+        { id: "ai-a", label: "Scenario A: Acceptance Higher", trigger: "Break and close above VAH (18,450) with responsive buying", targets: "18,500 → 18,540 (prior highs)", stop: "Back below 18,430", probability: 40 },
+        { id: "ai-b", label: "Scenario B: Range Development", trigger: "Rotation between VAH and VAL, no trend emergence", targets: "Fade extremes of range", stop: "Break outside range with acceptance", probability: 40 },
+        { id: "ai-c", label: "Scenario C: Rejection / Reversal", trigger: "Rejection at VAH, break below POC with initiative selling", targets: "18,350 → 18,300", stop: "Reclaim above 18,420", probability: 20 },
+      ],
+    }));
+    setAiLoading(false);
   };
 
-  const removeInvalidationCondition = (index: number) => {
-    setInvalidationConditions(invalidationConditions.filter((_, i) => i !== index));
-  };
-
-  const updateInvalidationCondition = (index: number, field: string, value: string) => {
-    const updated = [...invalidationConditions];
-    updated[index] = { ...updated[index], [field]: value };
-    setInvalidationConditions(updated);
-  };
-
-  const addKeyLevel = () => {
-    setKeyLevels([...keyLevels, { level: 0, description: "" }]);
-  };
-
-  const removeKeyLevel = (index: number) => {
-    setKeyLevels(keyLevels.filter((_, i) => i !== index));
-  };
-
-  const updateKeyLevel = (index: number, field: string, value: string | number) => {
-    const updated = [...keyLevels];
-    updated[index] = { ...updated[index], [field]: value };
-    setKeyLevels(updated);
-  };
-
-  const addTarget = () => {
-    setTargets([...targets, { price: 0, size: 1, rationale: "" }]);
-  };
-
-  const removeTarget = (index: number) => {
-    setTargets(targets.filter((_, i) => i !== index));
-  };
-
-  const updateTarget = (index: number, field: string, value: string | number) => {
-    const updated = [...targets];
-    updated[index] = { ...updated[index], [field]: value };
-    setTargets(updated);
-  };
-
-  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      const newTag = tagInput.trim();
-      if (newTag && !tags.includes(newTag)) {
-        setTags([...tags, newTag]);
-      }
-      setTagInput("");
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ticker || !thesis || !entryTrigger) return;
-
-    onSubmit({
-      ticker: ticker.toUpperCase(),
-      direction,
-      thesis,
-      invalidationConditions: invalidationConditions.filter(ic => ic.condition),
-      keyLevels: keyLevels.filter(kl => kl.description),
-      entryTrigger,
-      stopLoss,
-      targets: targets.filter(t => t.price > 0),
-      timeframe,
-      tags,
-      requiresSpecialEvent,
-      mode,
-      status: "ACTIVE",
-    });
-  };
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); navigate("/"); };
+  const totalProbability = formData.scenarios.reduce((sum, s) => sum + s.probability, 0);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Header row */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="ticker" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ticker</Label>
-          <Input
-            id="ticker"
-            value={ticker}
-            onChange={(e) => setTicker(e.target.value.toUpperCase())}
-            placeholder="ES, NQ, SPY..."
-            className="font-mono uppercase"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Direction</Label>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant={direction === "LONG" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setDirection("LONG")}
-              className={cn(
-                "flex-1 text-xs",
-                direction === "LONG" && "bg-success hover:bg-success/90 text-success-foreground"
-              )}
-            >
-              Long
-            </Button>
-            <Button
-              type="button"
-              variant={direction === "SHORT" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setDirection("SHORT")}
-              className={cn(
-                "flex-1 text-xs",
-                direction === "SHORT" && "bg-danger hover:bg-danger/90 text-danger-foreground"
-              )}
-            >
-              Short
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Timeframe */}
-      <div className="space-y-2">
-        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-          <Clock className="h-3 w-3" />
-          Primary Timeframe
-        </Label>
-        <Select value={timeframe} onValueChange={(v) => setTimeframe(v as Timeframe)}>
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TIMEFRAME_OPTIONS.map(opt => (
-              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Thesis */}
-      <div className="space-y-2">
-        <Label htmlFor="thesis" className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-          <TrendingUp className="h-3 w-3" />
-          Trade Thesis
-        </Label>
-        <Textarea
-          id="thesis"
-          value={thesis}
-          onChange={(e) => setThesis(e.target.value)}
-          placeholder="Describe your auction market theory thesis, key price levels, and expected price path..."
-          className="min-h-[100px] text-sm resize-none"
-          required
-        />
-      </div>
-
-      {/* Invalidation Conditions */}
-      <div className="space-y-2">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <AlertTriangle className="h-3 w-3" />
-            Invalidation Conditions
-          </Label>
-          <Button type="button" variant="ghost" size="sm" onClick={addInvalidationCondition} className="h-6 text-xs">
-            <Plus className="h-3 w-3 mr-1" /> Add
+          <Label className="text-base font-semibold">Market Context</Label>
+          <Button type="button" variant="outline" size="sm" onClick={handleAIAssist} disabled={aiLoading}>
+            <Wand2 className={cn("h-3.5 w-3.5 mr-1.5", aiLoading && "animate-spin")} />{aiLoading ? "Analyzing..." : "AI Assist"}
           </Button>
         </div>
+        <Textarea placeholder="Describe the current market structure, key levels, and overnight context..." value={formData.context} onChange={(e) => setFormData((prev) => ({ ...prev, context: e.target.value }))} className="min-h-[120px]" />
+      </div>
+      <div className="grid sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          {invalidationConditions.map((ic, i) => (
-            <div key={i} className="flex gap-2">
-              <Input
-                value={ic.condition}
-                onChange={(e) => updateInvalidationCondition(i, 'condition', e.target.value)}
-                placeholder="e.g. Break below 4500 on 15m close"
-                className="flex-1 text-sm"
-              />
-              <Select value={ic.timeframe} onValueChange={(v) => updateInvalidationCondition(i, 'timeframe', v)}>
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
+          <Label>Market Structure</Label>
+          <Select value={formData.structure} onValueChange={(value) => setFormData((prev) => ({ ...prev, structure: value as any }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="coherent">Coherent</SelectItem>
+              <SelectItem value="divergent">Divergent</SelectItem>
+              <SelectItem value="transitioning">Transitioning</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Market Bias</Label>
+          <Select value={formData.bias} onValueChange={(value) => setFormData((prev) => ({ ...prev, bias: value as any }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="bullish">Bullish</SelectItem>
+              <SelectItem value="bearish">Bearish</SelectItem>
+              <SelectItem value="neutral">Neutral</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <Separator />
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-base font-semibold">Key Levels</Label>
+          <Button type="button" variant="outline" size="sm" onClick={addKeyLevel}><Plus className="h-3.5 w-3.5 mr-1.5" />Add Level</Button>
+        </div>
+        <div className="space-y-2">
+          {formData.keyLevels.map((level, index) => (
+            <div key={index} className="flex gap-2 items-center">
+              <input type="number" placeholder="Price" value={level.price}
+                onChange={(e) => { const newLevels = [...formData.keyLevels]; newLevels[index].price = e.target.value; setFormData((prev) => ({ ...prev, keyLevels: newLevels })); }}
+                className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm" />
+              <Select value={level.type} onValueChange={(value) => { const newLevels = [...formData.keyLevels]; newLevels[index].type = value as any; setFormData((prev) => ({ ...prev, keyLevels: newLevels })); }}>
+                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {TIMEFRAME_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
+                  <SelectItem value="support">Support</SelectItem>
+                  <SelectItem value="resistance">Resistance</SelectItem>
+                  <SelectItem value="value_area">Value Area</SelectItem>
+                  <SelectItem value="poc">POC</SelectItem>
                 </SelectContent>
               </Select>
-              {invalidationConditions.length > 1 && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => removeInvalidationCondition(i)} className="h-9 w-9 p-0">
-                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              )}
+              <Button type="button" variant="ghost" size="icon" onClick={() => removeKeyLevel(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Key Levels */}
-      <div className="space-y-2">
+      <Separator />
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Target className="h-3 w-3" />
-            Key Price Levels
-          </Label>
-          <Button type="button" variant="ghost" size="sm" onClick={addKeyLevel} className="h-6 text-xs">
-            <Plus className="h-3 w-3 mr-1" /> Add
-          </Button>
-        </div>
-        <div className="space-y-2">
-          {keyLevels.map((kl, i) => (
-            <div key={i} className="flex gap-2">
-              <Input
-                type="number"
-                value={kl.level || ""}
-                onChange={(e) => updateKeyLevel(i, 'level', parseFloat(e.target.value) || 0)}
-                placeholder="Price"
-                className="w-24 text-sm font-mono"
-                step="0.25"
-              />
-              <Input
-                value={kl.description}
-                onChange={(e) => updateKeyLevel(i, 'description', e.target.value)}
-                placeholder="e.g. Prior day high, POC, VWAP..."
-                className="flex-1 text-sm"
-              />
-              {keyLevels.length > 1 && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => removeKeyLevel(i)} className="h-9 w-9 p-0">
-                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              )}
+          <div>
+            <Label className="text-base font-semibold">Scenarios</Label>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-muted-foreground">Total probability:</span>
+              <Badge variant="outline" className={cn(totalProbability === 100 ? "bg-green-500/20 text-green-400 border-green-500/50" : "bg-amber-500/20 text-amber-400 border-amber-500/50")}>{totalProbability}%</Badge>
+              {totalProbability !== 100 && <span className="text-xs text-amber-400 flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Should sum to 100%</span>}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Entry Trigger */}
-      <div className="space-y-2">
-        <Label htmlFor="entryTrigger" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Entry Trigger</Label>
-        <Textarea
-          id="entryTrigger"
-          value={entryTrigger}
-          onChange={(e) => setEntryTrigger(e.target.value)}
-          placeholder="Specific conditions that must be met before entering the trade..."
-          className="min-h-[80px] text-sm resize-none"
-          required
-        />
-      </div>
-
-      {/* Stop Loss */}
-      <div className="space-y-2">
-        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-          <BarChart3 className="h-3 w-3" />
-          Stop Loss (points)
-        </Label>
-        <div className="flex gap-2 flex-wrap">
-          {STOP_PRESETS.map(preset => (
-            <Button
-              key={preset.value}
-              type="button"
-              variant={stopLoss === preset.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStopLoss(preset.value)}
-              className="text-xs h-7"
-            >
-              {preset.label}
-            </Button>
-          ))}
-          <Input
-            type="number"
-            value={stopLoss}
-            onChange={(e) => setStopLoss(parseFloat(e.target.value) || 0)}
-            className="w-20 h-7 text-sm font-mono"
-            step="0.25"
-          />
-        </div>
-      </div>
-
-      {/* Targets */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Price Targets</Label>
-          <Button type="button" variant="ghost" size="sm" onClick={addTarget} className="h-6 text-xs">
-            <Plus className="h-3 w-3 mr-1" /> Add
-          </Button>
-        </div>
-        <div className="space-y-2">
-          {targets.map((target, i) => (
-            <div key={i} className="flex gap-2">
-              <Input
-                type="number"
-                value={target.price || ""}
-                onChange={(e) => updateTarget(i, 'price', parseFloat(e.target.value) || 0)}
-                placeholder="Price"
-                className="w-24 text-sm font-mono"
-                step="0.25"
-              />
-              <Input
-                type="number"
-                value={target.size}
-                onChange={(e) => updateTarget(i, 'size', parseFloat(e.target.value) || 1)}
-                placeholder="Size"
-                className="w-16 text-sm font-mono"
-                min="0.1"
-                step="0.1"
-              />
-              <Input
-                value={target.rationale}
-                onChange={(e) => updateTarget(i, 'rationale', e.target.value)}
-                placeholder="e.g. Prior swing high, measured move"
-                className="flex-1 text-sm"
-              />
-              {targets.length > 1 && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => removeTarget(i)} className="h-9 w-9 p-0">
-                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Tags */}
-      <div className="space-y-2">
-        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tags</Label>
-        <Input
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={handleTagKeyDown}
-          placeholder="Add tags (press Enter)"
-          className="text-sm"
-        />
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {tags.map(tag => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="text-xs cursor-pointer"
-                onClick={() => setTags(tags.filter(t => t !== tag))}
-              >
-                {tag} ×
-              </Badge>
-            ))}
           </div>
-        )}
-      </div>
-
-      {/* Special Event Toggle */}
-      <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-secondary/20">
-        <div>
-          <p className="text-sm font-medium">Requires Special Event</p>
-          <p className="text-xs text-muted-foreground">FOMC, earnings, economic data, etc.</p>
+          <Button type="button" variant="outline" size="sm" onClick={addScenario}><Plus className="h-3.5 w-3.5 mr-1.5" />Add Scenario</Button>
         </div>
-        <Switch
-          checked={requiresSpecialEvent}
-          onCheckedChange={setRequiresSpecialEvent}
-        />
+        <div className="space-y-4">
+          {formData.scenarios.map((scenario, index) => (
+            <div key={scenario.id} className="p-4 rounded-lg border border-border bg-secondary/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /><span className="font-medium text-sm">Scenario {String.fromCharCode(65 + index)}</span></div>
+                <Button type="button" variant="ghost" size="icon" onClick={() => removeScenario(scenario.id)} disabled={formData.scenarios.length === 1}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+              </div>
+              <div className="grid gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Label</Label>
+                  <input type="text" placeholder="e.g., Acceptance Higher" value={scenario.label} onChange={(e) => updateScenario(scenario.id, "label", e.target.value)} className="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Trigger Condition</Label>
+                  <Textarea placeholder="What needs to happen for this scenario to activate?" value={scenario.trigger} onChange={(e) => updateScenario(scenario.id, "trigger", e.target.value)} className="min-h-[60px] text-sm" />
+                </div>
+                <div className="grid sm:grid-cols-3 gap-2">
+                  <div className="space-y-1"><Label className="text-xs">Targets</Label><input type="text" placeholder="18,500 → 18,540" value={scenario.targets} onChange={(e) => updateScenario(scenario.id, "targets", e.target.value)} className="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" /></div>
+                  <div className="space-y-1"><Label className="text-xs">Stop</Label><input type="text" placeholder="Back below POC" value={scenario.stop} onChange={(e) => updateScenario(scenario.id, "stop", e.target.value)} className="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" /></div>
+                  <div className="space-y-1"><Label className="text-xs">Probability %</Label><input type="number" min="0" max="100" value={scenario.probability} onChange={(e) => updateScenario(scenario.id, "probability", parseInt(e.target.value) || 0)} className="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" /></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-
-      {/* Actions */}
+      <Separator />
+      <div className="space-y-2">
+        <Label className="text-base font-semibold flex items-center gap-2"><Lightbulb className="h-4 w-4" />Additional Notes</Label>
+        <Textarea placeholder="Any additional context, reminders, or observations for today's session..." value={formData.notes} onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))} className="min-h-[80px]" />
+      </div>
       <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={isLoading || !ticker || !thesis || !entryTrigger} className="flex-1 gap-2">
-          <Wand2 className="h-4 w-4" />
-          {isLoading ? "Analyzing..." : "Submit for AI Analysis"}
-        </Button>
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-            Cancel
-          </Button>
-        )}
+        <Button type="submit" className="flex-1">Save Auction Plan</Button>
+        <Button type="button" variant="outline" onClick={() => navigate("/")}>Cancel</Button>
       </div>
     </form>
   );
