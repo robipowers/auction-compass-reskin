@@ -1,46 +1,39 @@
 import { useState, useEffect } from "react";
-import { useMarketData } from "@/contexts/MarketDataContext";
-import { AlertCircle, X, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { WifiOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function DisconnectionBanner() {
-  const { connectionStatus, reconnect } = useMarketData();
+interface DisconnectionBannerProps {
+  isConnected: boolean;
+  className?: string;
+}
+
+export const DisconnectionBanner: React.FC<DisconnectionBannerProps> = ({ isConnected, className }) => {
   const [dismissed, setDismissed] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
-    if (connectionStatus === "connected") {
+    if (!isConnected) {
       setDismissed(false);
+      setShowBanner(true);
+    } else {
+      setShowBanner(false);
     }
-  }, [connectionStatus]);
+  }, [isConnected]);
 
-  if (connectionStatus === "connected" || dismissed) return null;
+  if (isConnected || dismissed || !showBanner) return null;
 
   return (
     <div className={cn(
-      "flex items-center gap-3 px-4 py-2.5 text-sm",
-      connectionStatus === "error" 
-        ? "bg-danger/15 border-b border-danger/25 text-danger"
-        : "bg-warning/15 border-b border-warning/25 text-warning"
+      "flex items-center justify-between px-4 py-2 bg-destructive/10 border-b border-destructive/20 text-destructive text-sm",
+      className
     )}>
-      <AlertCircle className="h-4 w-4 shrink-0" />
-      <span className="flex-1">
-        {connectionStatus === "reconnecting" 
-          ? "Connection lost — reconnecting to market data..."
-          : "Market data disconnected. Manual mode active."}
-      </span>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={reconnect}
-        className="h-6 px-2 text-xs gap-1"
-      >
-        <RefreshCw className="h-3 w-3" />
-        Reconnect
-      </Button>
-      <button onClick={() => setDismissed(true)} className="ml-1 opacity-70 hover:opacity-100">
+      <div className="flex items-center gap-2">
+        <WifiOff className="h-4 w-4" />
+        <span>Connection lost. Attempting to reconnect...</span>
+      </div>
+      <button onClick={() => setDismissed(true)} className="hover:opacity-70">
         <X className="h-4 w-4" />
       </button>
     </div>
   );
-}
+};

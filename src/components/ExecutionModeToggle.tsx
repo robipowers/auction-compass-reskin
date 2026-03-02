@@ -1,34 +1,35 @@
 import { useExecutionMode, ExecutionMode } from "@/contexts/ExecutionModeContext";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Swords, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function ExecutionModeToggle({ className }: { className?: string }) {
+export const ExecutionModeToggle = () => {
   const { mode, setMode } = useExecutionMode();
 
+  const modes: { value: ExecutionMode; label: string }[] = [
+    { value: "sim", label: "SIM" },
+    { value: "live", label: "LIVE" },
+  ];
+
   return (
-    <ToggleGroup
-      type="single"
-      value={mode}
-      onValueChange={(v) => v && setMode(v as ExecutionMode)}
-      className={cn("border border-border/50 rounded-lg p-0.5 bg-secondary/30", className)}
-    >
-      <ToggleGroupItem
-        value="sim"
-        aria-label="Simulation mode"
-        className="text-xs h-7 px-3 gap-1.5 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-      >
-        <BookOpen className="h-3.5 w-3.5" />
-        Sim
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value="live"
-        aria-label="Live mode"
-        className="text-xs h-7 px-3 gap-1.5 data-[state=on]:bg-danger/90 data-[state=on]:text-white data-[state=on]:shadow-sm"
-      >
-        <Swords className="h-3.5 w-3.5" />
-        Live
-      </ToggleGroupItem>
-    </ToggleGroup>
+    <div className="flex items-center rounded-md border border-border overflow-hidden">
+      {modes.map(({ value, label }) => (
+        <Button
+          key={value}
+          variant="ghost"
+          size="sm"
+          onClick={() => setMode(value)}
+          className={cn(
+            "h-7 px-3 rounded-none text-xs font-medium transition-colors",
+            mode === value
+              ? value === "live"
+                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                : "bg-primary/20 text-primary hover:bg-primary/30"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {label}
+        </Button>
+      ))}
+    </div>
   );
-}
+};
