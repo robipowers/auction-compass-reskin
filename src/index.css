@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Light Theme — Refined Institutional Trading
+     Cooler, sharper foundation. Slate-blue undertone replaces the warm wash.
+     Higher contrast text hierarchy. Cards pop with cleaner borders. */
+  :root {
+    --background: 220 16% 96%;
+    --foreground: 224 71% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 224 71% 8%;
+
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 9% 43%;
+
+    --accent: 173 80% 36%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 87%;
+    --input-background: 220 16% 96%;
+    --input: 220 13% 71%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.625rem;
+
+    /* Trading-specific semantic tokens */
+    --success: 152 69% 31%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --danger: 0 72% 51%;
+    --danger-foreground: 0 0% 100%;
+    --info: 221 83% 53%;
+    --info-foreground: 0 0% 100%;
+    
+    /* Text hierarchy */
+    --text-primary: 224 71% 4%;
+    --text-secondary: 220 9% 30%;
+    --text-muted: 220 9% 43%;
+    --text-placeholder: 220 9% 56%;
+
+    /* Scenario tracking status */
+    --prob-confirmed: 152 69% 31%;
+    --prob-strengthening: 38 92% 50%;
+    --prob-balanced: 221 83% 53%;
+    --prob-weakening: 25 95% 53%;
+    --prob-invalidated: 0 72% 51%;
+
+    /* Premium gradients */
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 16% 97%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(173 80% 36%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(173 80% 36%) 0%, hsl(152 69% 31%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(220 16% 96%) 0%, hsl(220 14% 92%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(263 70% 50%) 100%);
+
+    /* Glass morphism */
+    --glass-bg: hsl(0 0% 100% / 0.85);
+    --glass-border: hsl(220 13% 87% / 0.6);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(224 71% 4% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(224 71% 4% / 0.07), 0 2px 4px -2px hsl(224 71% 4% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(224 71% 4% / 0.08), 0 4px 6px -4px hsl(224 71% 4% / 0.04);
+    --shadow-xl: 0 20px 25px -5px hsl(224 71% 4% / 0.08), 0 8px 10px -6px hsl(224 71% 4% / 0.04);
+    --shadow-glow: 0 0 30px hsl(221 83% 53% / 0.12);
+    --shadow-success-glow: 0 0 24px hsl(152 69% 31% / 0.15);
+    --shadow-warning-glow: 0 0 24px hsl(38 92% 50% / 0.15);
+    --shadow-danger-glow: 0 0 24px hsl(0 72% 51% / 0.15);
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 224 71% 4%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 92%;
+    --sidebar-accent-foreground: 224 71% 4%;
+    --sidebar-border: 220 13% 87%;
+    --sidebar-ring: 221 83% 53%;
+  }
+
+  /* Dark Theme — Institutional Terminal
+     Deep navy-charcoal base. Very low saturation surfaces.
+     Crisp text layers. Accent colors pop harder against the dark base.
+     Think Bloomberg Terminal meets Linear. */
+  .dark {
+    --background: 225 25% 6%;
+    --foreground: 210 20% 93%;
+
+    --card: 225 20% 10%;
+    --card-foreground: 210 20% 93%;
+
+    --popover: 225 20% 10%;
+    --popover-foreground: 210 20% 93%;
+
+    --primary: 217 92% 65%;
+    --primary-foreground: 225 25% 6%;
+
+    --secondary: 225 18% 14%;
+    --secondary-foreground: 210 20% 88%;
+
+    --muted: 225 18% 14%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 173 80% 44%;
+    --accent-foreground: 225 25% 6%;
+
+    --destructive: 0 72% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 225 15% 18%;
+    --input-background: 225 18% 12%;
+    --input: 215 15% 30%;
+    --ring: 217 92% 65%;
+
+    --success: 152 69% 42%;
+    --success-foreground: 225 25% 6%;
+    --warning: 38 92% 56%;
+    --warning-foreground: 225 25% 6%;
+    --danger: 0 72% 60%;
+    --danger-foreground: 0 0% 100%;
+    --info: 217 92% 65%;
+    --info-foreground: 225 25% 6%;
+    
+    --text-primary: 210 20% 93%;
+    --text-secondary: 215 15% 72%;
+    --text-muted: 215 15% 55%;
+    --text-placeholder: 215 12% 38%;
+
+    --prob-confirmed: 152 69% 42%;
+    --prob-strengthening: 38 92% 56%;
+    --prob-balanced: 217 92% 65%;
+    --prob-weakening: 25 95% 58%;
+    --prob-invalidated: 0 72% 60%;
+
+    --gradient-card: linear-gradient(180deg, hsl(225 20% 10%) 0%, hsl(225 22% 8%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(217 92% 65%) 0%, hsl(173 80% 44%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(173 80% 44%) 0%, hsl(152 69% 42%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(225 25% 6%) 0%, hsl(225 22% 4%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(217 92% 65%) 0%, hsl(263 70% 58%) 100%);
+
+    --glass-bg: hsl(225 20% 10% / 0.85);
+    --glass-border: hsl(225 15% 20% / 0.6);
+
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.25);
+    --shadow-md: 0 4px 8px -1px hsl(0 0% 0% / 0.35), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-lg: 0 10px 20px -3px hsl(0 0% 0% / 0.4), 0 4px 8px -4px hsl(0 0% 0% / 0.2);
+    --shadow-xl: 0 20px 30px -5px hsl(0 0% 0% / 0.5), 0 8px 12px -6px hsl(0 0% 0% / 0.25);
+    --shadow-glow: 0 0 36px hsl(217 92% 65% / 0.2);
+    --shadow-success-glow: 0 0 28px hsl(152 69% 42% / 0.25);
+    --shadow-warning-glow: 0 0 28px hsl(38 92% 56% / 0.25);
+    --shadow-danger-glow: 0 0 28px hsl(0 72% 60% / 0.25);
+
+    --sidebar-background: 225 22% 8%;
+    --sidebar-foreground: 210 20% 93%;
+    --sidebar-primary: 217 92% 65%;
+    --sidebar-primary-foreground: 225 25% 6%;
+    --sidebar-accent: 225 18% 14%;
+    --sidebar-accent-foreground: 210 20% 93%;
+    --sidebar-border: 225 15% 15%;
+    --sidebar-ring: 217 92% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.011em;
+    line-height: 1.6;
+  }
+
+  h1 { @apply text-3xl font-bold tracking-tight lg:text-4xl; letter-spacing: -0.025em; line-height: 1.2; }
+  h2 { @apply text-2xl font-semibold tracking-tight; letter-spacing: -0.02em; line-height: 1.25; }
+  h3 { @apply text-xl font-semibold; letter-spacing: -0.015em; line-height: 1.3; }
+  h4, h5, h6 { letter-spacing: -0.01em; line-height: 1.4; font-weight: 600; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 100px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--input)); }
+
+  * { transition-property: background-color, border-color, color; transition-duration: 0.15s; transition-timing-function: ease-out; }
+  *[class*="animate-"], *[class*="transition-"] { transition-property: all; }
+}
+
+@layer components {
+  .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); }
+  .gradient-text { background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .gradient-text-premium { background: var(--gradient-premium); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .probability-bar { @apply relative h-2.5 w-full overflow-hidden rounded-full; background: hsl(var(--muted)); }
+  .probability-fill { @apply absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out; }
+  .section-icon { @apply flex h-10 w-10 items-center justify-center rounded-xl text-lg; background: var(--gradient-primary); color: hsl(var(--primary-foreground)); box-shadow: var(--shadow-md); }
+  .form-section { @apply rounded-xl border border-border bg-card p-6; box-shadow: var(--shadow-sm); }
+  .card-hover { transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1); }
+  .card-hover:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); border-color: hsl(var(--primary) / 0.25); }
+  .status-confirmed { @apply bg-success/20 text-success border border-success/30; }
+  .status-strengthening { @apply bg-warning/20 text-warning border border-warning/30; }
+  .status-balanced { @apply bg-info/20 text-info border border-info/30; }
+  .status-weakening { @apply bg-warning/20 text-warning border border-warning/30; }
+  .status-invalidated { @apply bg-danger/20 text-danger border border-danger/30; }
+  .status-badge { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide; }
+  .status-badge-inactive { @apply status-badge bg-muted/60 text-muted-foreground border border-border; }
+  .status-badge-in-play { @apply status-badge bg-info/15 text-info border border-info/30; }
+  .status-badge-partial { @apply status-badge bg-warning/15 text-warning border border-warning/30; }
+  .status-badge-validated { @apply status-badge bg-success/15 text-success border border-success/30; }
+  .status-badge-invalidated { @apply status-badge bg-danger/15 text-danger border border-danger/30; }
+  .premium-input { @apply transition-all duration-200 bg-secondary border-border; box-shadow: var(--shadow-sm); }
+  .premium-input:focus { box-shadow: var(--shadow-md), 0 0 0 3px hsl(var(--primary) / 0.12); border-color: hsl(var(--primary) / 0.4); }
+  .divider-subtle { @apply border-t border-border/40; }
+  .text-balance { text-wrap: balance; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .institutional-table { @apply w-full; }
+  .institutional-table th { @apply bg-card px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border; }
+  .institutional-table td { @apply px-4 py-3 text-sm border-b border-border/50; }
+  .institutional-table tr:hover td { @apply bg-secondary/50; }
+  .glow-success { box-shadow: var(--shadow-success-glow); }
+  .glow-warning { box-shadow: var(--shadow-warning-glow); }
+  .glow-danger { box-shadow: var(--shadow-danger-glow); }
+  .glow-primary { box-shadow: var(--shadow-glow); }
+}
+
+@layer utilities {
+  .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  .shadow-premium { box-shadow: var(--shadow-lg); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .hover-brightness:hover { filter: brightness(1.1); }
+}
